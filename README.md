@@ -1,1 +1,1 @@
-# hospital-data-analysis-and-prediction-pr
+# hospital-data-analysis-and-prediction
