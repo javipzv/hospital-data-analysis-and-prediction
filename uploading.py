@@ -52,23 +52,29 @@ df_hospital2 = pd.read_excel("data/hospital2.xlsx")
 # Cambiar los nombres de las columnas
 df_hospital1 = change_column_names(df_hospital1)
 df_hospital2 = change_column_names(df_hospital2)
+
+# Cambiar los tipos de datos para compatibilidad con PostgreSQL
 df_hospital2['date_of_first_symptoms'] = df_hospital2['date_of_first_symptoms'].astype(object).where(df_hospital2['date_of_first_symptoms'].notnull(), np.nan)
 df_hospital2['admission_date'] = df_hospital2['admission_date'].astype(object).where(df_hospital2['admission_date'].notnull(), np.nan)
 
+# Reemplazar NaN en columnas numéricas antes de convertir a int64
+df_hospital2['patient_id'] = df_hospital2['patient_id'].fillna(-1).astype('int64')
+df_hospital2['admission_id'] = df_hospital2['admission_id'].fillna(-1).astype('int64')
+
 # Crear la tabla hospital1 en la base de datos
-cursor.execute(sql_command_create_table(df_hospital1, "hospital1"))
-cursor.execute(sql_command_create_table(df_hospital2, "hospital2"))
+cursor.execute(sql_command_create_table(df_hospital1, "hospital1_data"))
+cursor.execute(sql_command_create_table(df_hospital2, "hospital2_data"))
 
 print("Tablas creadas en Supabase.")
 
 # Insertar los datos de df_hospital1 en la tabla 'hospital1'
-insert_query = f"INSERT INTO hospital1 ({', '.join(df_hospital1.columns)}) VALUES ({', '.join(['%s'] * len(df_hospital1.columns))})"
+insert_query = f"INSERT INTO hospital1_data ({', '.join(df_hospital1.columns)}) VALUES ({', '.join(['%s'] * len(df_hospital1.columns))})"
 cursor.executemany(insert_query, df_hospital1.values)
 
 print("Datos de hospital1 subidos a Supabase.")
 
 # Insertar los datos de df_hospital2 en la tabla 'hospital2'
-insert_query = f"INSERT INTO hospital2 ({', '.join(df_hospital2.columns)}) VALUES ({', '.join(['%s'] * len(df_hospital2.columns))})"
+insert_query = f"INSERT INTO hospital2_data ({', '.join(df_hospital2.columns)}) VALUES ({', '.join(['%s'] * len(df_hospital2.columns))})"
 cursor.executemany(insert_query, df_hospital2.values)
 
 print("Datos de hospital2 subidos a Supabase.")
